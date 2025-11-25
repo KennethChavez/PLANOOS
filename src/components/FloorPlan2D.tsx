@@ -151,7 +151,7 @@ const FloorPlan2D = () => {
     ctx.fillText('PRINTERS', 0, 0);
     ctx.restore();
 
-    drawRoom({ x: 35, y: 80, width: 20, height: 25, label: 'LOBBY', sublabel: 'PLIHSA', type: 'lobby' });
+    drawRoom({ x: 35, y: 80, width: 20, height: 25, label: 'RECEPCION LOBBY', sublabel: 'PLIHSA', type: 'lobby' });
 
     for (let i = 0; i < 3; i++) {
       const gx = 65 + i * 12;
@@ -159,21 +159,21 @@ const FloorPlan2D = () => {
     }
 
     const workstations = [
-      { x: 10, y: 55, label: 'Micah' },
+      { x: 10, y: 55, label: 'Mercedez' },
       { x: 20, y: 55, label: 'Arnold' },
       { x: 30, y: 55, label: 'Jose' },
       { x: 40, y: 55, label: 'Angel' },
-      { x: 10, y: 45, label: 'Liliana' },
-      { x: 20, y: 45, label: 'Mario' },
-      { x: 30, y: 45, label: 'Roldan' },
-      { x: 40, y: 45, label: 'Steve' },
+      { x: 10, y: 45, label: 'Silvia' },
+      { x: 20, y: 45, label: 'Roldan' },
+      { x: 30, y: 45, label: 'Mario' },
+      { x: 40, y: 45, label: 'Lilian' },
       { x: 10, y: 25, label: '1' },
       { x: 20, y: 25, label: '2' },
       { x: 30, y: 25, label: '3' },
       { x: 40, y: 25, label: 'Victoria' },
-      { x: 10, y: 15, label: 'Audi' },
-      { x: 20, y: 15, label: 'Audi' },
-      { x: 30, y: 15, label: 'Ivan' },
+      { x: 10, y: 15, label: 'Desk1' },
+      { x: 20, y: 15, label: 'Desk2' },
+      { x: 30, y: 15, label: 'Juan' },
       { x: 40, y: 15, label: 'Gerardo' },
     ];
 

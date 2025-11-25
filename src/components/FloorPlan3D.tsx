@@ -130,21 +130,21 @@ const FloorPlan3D = () => {
       drawBox(5, 45, 0.5, 40, 20, 8, '#a5f3fc');
 
       drawBox(-40, 5, 0.5, 12, 18, 6, '#86efac');
-      drawBox(-20, 0, 0.5, 20, 25, 10, '#f1f5f9', 'LOBBY');
+      drawBox(-20, 0, 0.5, 20, 25, 10, '#f1f5f9', 'RECEPCION LOBBY');
 
       for (let i = 0; i < 3; i++) {
         drawBox(10 + i * 12, 0, 0.5, 10, 15, 8, '#fde047');
       }
 
       const deskPositions = [
-        { x: -40, y: -25, label: 'Micah' },
+        { x: -40, y: -25, label: 'Merce' },
         { x: -30, y: -25, label: 'Arnold' },
         { x: -20, y: -25, label: 'Jose' },
         { x: -10, y: -25, label: 'Angel' },
-        { x: -40, y: -35, label: 'Liliana' },
-        { x: -30, y: -35, label: 'Mario' },
-        { x: -20, y: -35, label: 'Roldan' },
-        { x: -10, y: -35, label: 'Steve' },
+        { x: -40, y: -35, label: 'Silvia' },
+        { x: -30, y: -35, label: 'Roldan' },
+        { x: -20, y: -35, label: 'Mario' },
+        { x: -10, y: -35, label: 'Lilian' },
       ];
 
       deskPositions.forEach(desk => {
@@ -158,9 +158,9 @@ const FloorPlan3D = () => {
         { x: -30, y: -55, label: '2' },
         { x: -20, y: -55, label: '3' },
         { x: -10, y: -55, label: 'Victoria' },
-        { x: -40, y: -65, label: 'Audi' },
-        { x: -30, y: -65, label: 'Audi' },
-        { x: -20, y: -65, label: 'Ivan' },
+        { x: -40, y: -65, label: 'Desk1' },
+        { x: -30, y: -65, label: 'Desk2' },
+        { x: -20, y: -65, label: 'Juan' },
         { x: -10, y: -65, label: 'Gerardo' },
       ];
 
@@ -168,7 +168,7 @@ const FloorPlan3D = () => {
         drawBox(desk.x, desk.y, 0.5, 10, 10, 5, '#fef3c7', desk.label);
       });
 
-      drawBox(0, -65, 0.5, 8, 20, 5, '#fed7aa', 'MONTALVO');
+      drawBox(0, -65, 0.5, 8, 20, 5, '#fed7aa', 'MANTE');
 
       drawBox(10, -65, 0.5, 35, 50, 12, '#bfdbfe', 'SALA TELA');
     };
