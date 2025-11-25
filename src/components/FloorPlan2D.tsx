@@ -1,14 +1,17 @@
 import { useEffect, useRef } from 'react';
 
-interface Room {
+interface NetworkPoint {
   x: number;
   y: number;
-  width: number;
-  height: number;
-  label: string;
-  sublabel?: string;
-  type: 'room' | 'desk' | 'utility' | 'lobby';
-  rotation?: number;
+  type: 'ap' | 'rj45';
+  label?: string;
+  ipAddress?: string;
+}
+
+interface CablePath {
+  from: NetworkPoint;
+  to: NetworkPoint;
+  type: 'cat6' | 'cat6a';
 }
 
 const FloorPlan2D = () => {
@@ -29,50 +32,30 @@ const FloorPlan2D = () => {
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const drawRoom = (room: Room) => {
-      const x = room.x * scale + offsetX;
-      const y = room.y * scale + offsetY;
-      const w = room.width * scale;
-      const h = room.height * scale;
+    const drawRoom = (x: number, y: number, width: number, height: number, fillColor: string, label: string, sublabel?: string) => {
+      const rx = x * scale + offsetX;
+      const ry = y * scale + offsetY;
+      const rw = width * scale;
+      const rh = height * scale;
 
-      ctx.save();
-
-      if (room.rotation) {
-        ctx.translate(x + w / 2, y + h / 2);
-        ctx.rotate((room.rotation * Math.PI) / 180);
-        ctx.translate(-(x + w / 2), -(y + h / 2));
-      }
-
-      if (room.type === 'lobby') {
-        ctx.fillStyle = '#f1f5f9';
-      } else if (room.type === 'room') {
-        ctx.fillStyle = '#e0f2fe';
-      } else if (room.type === 'desk') {
-        ctx.fillStyle = '#fef3c7';
-      } else {
-        ctx.fillStyle = '#f0fdf4';
-      }
-
-      ctx.fillRect(x, y, w, h);
-
+      ctx.fillStyle = fillColor;
+      ctx.fillRect(rx, ry, rw, rh);
       ctx.strokeStyle = '#1e293b';
       ctx.lineWidth = 2;
-      ctx.strokeRect(x, y, w, h);
+      ctx.strokeRect(rx, ry, rw, rh);
 
       ctx.fillStyle = '#1e293b';
-      ctx.font = room.type === 'lobby' ? 'bold 14px Arial' : '11px Arial';
+      ctx.font = sublabel ? 'bold 12px Arial' : '11px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      if (room.sublabel) {
-        ctx.fillText(room.label, x + w / 2, y + h / 2 - 6);
+      if (sublabel) {
+        ctx.fillText(label, rx + rw / 2, ry + rh / 2 - 6);
         ctx.font = '9px Arial';
-        ctx.fillText(room.sublabel, x + w / 2, y + h / 2 + 6);
+        ctx.fillText(sublabel, rx + rw / 2, ry + rh / 2 + 6);
       } else {
-        ctx.fillText(room.label, x + w / 2, y + h / 2);
+        ctx.fillText(label, rx + rw / 2, ry + rh / 2);
       }
-
-      ctx.restore();
     };
 
     const drawStairs = (x: number, y: number, width: number, height: number) => {
@@ -133,13 +116,84 @@ const FloorPlan2D = () => {
       }
     };
 
+    const drawAP = (x: number, y: number, label: string, ipAddress: string) => {
+      const px = x * scale + offsetX;
+      const py = y * scale + offsetY;
+      const radius = 8;
+
+      ctx.fillStyle = '#dc2626';
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#991b1b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(px, py, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 7px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('AP', px, py - 1);
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '7px Arial';
+      ctx.fillText(label, px, py + 10);
+      ctx.font = '6px Arial';
+      ctx.fillStyle = '#dc2626';
+      ctx.fillText(ipAddress, px, py + 18);
+    };
+
+    const drawRJ45 = (x: number, y: number, label: string, ipAddress: string) => {
+      const px = x * scale + offsetX;
+      const py = y * scale + offsetY;
+      const size = 6;
+
+      ctx.fillStyle = '#2563eb';
+      ctx.fillRect(px - size / 2, py - size / 2, size, size);
+
+      ctx.strokeStyle = '#1e60a6';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(px - size / 2, py - size / 2, size, size);
+
+      ctx.fillStyle = '#1e293b';
+      ctx.font = '6px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText(label, px, py + 8);
+      ctx.fillStyle = '#2563eb';
+      ctx.fillText(ipAddress, px, py + 14);
+    };
+
+    const drawCable = (fromX: number, fromY: number, toX: number, toY: number, type: 'cat6' | 'cat6a') => {
+      const fx = fromX * scale + offsetX;
+      const fy = fromY * scale + offsetY;
+      const tx = toX * scale + offsetX;
+      const ty = toY * scale + offsetY;
+
+      if (type === 'cat6a') {
+        ctx.strokeStyle = '#ea580c';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([]);
+      } else {
+        ctx.strokeStyle = '#3b82f6';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([3, 3]);
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(fx, fy);
+      ctx.lineTo(tx, ty);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    };
+
     drawStairs(5, 112, 15, 15);
-
-    drawRoom({ x: 5, y: 130, width: 20, height: 15, label: 'PRINTER', type: 'utility' });
-
+    drawRoom(5, 130, 20, 15, '#f0fdf4', 'PRINTER', undefined);
     drawGrid(35, 125, 15, 20, 2, 3);
-
-    drawRoom({ x: 60, y: 125, width: 40, height: 20, label: 'ZONA AC', type: 'utility' });
+    drawRoom(60, 125, 40, 20, '#f0fdf4', 'ZONA AC', undefined);
     drawGrid(60, 125, 40, 20, 2, 5);
 
     drawGrid(10, 85, 12, 18, 3, 1);
@@ -151,7 +205,7 @@ const FloorPlan2D = () => {
     ctx.fillText('PRINTERS', 0, 0);
     ctx.restore();
 
-    drawRoom({ x: 35, y: 80, width: 20, height: 25, label: 'RECEPCION LOBBY', sublabel: 'PLIHSA', type: 'lobby' });
+    drawRoom(35, 80, 20, 25, '#f1f5f9', 'RECEPCION LOBBY', 'PLIHSA');
 
     for (let i = 0; i < 3; i++) {
       const gx = 65 + i * 12;
@@ -178,53 +232,121 @@ const FloorPlan2D = () => {
     ];
 
     workstations.forEach(ws => {
-      drawRoom({ x: ws.x, y: ws.y, width: 10, height: 10, label: ws.label, type: 'desk' });
+      drawRoom(ws.x, ws.y, 10, 10, '#fef3c7', ws.label, undefined);
     });
 
-    drawRoom({ x: 50, y: 45, width: 8, height: 20, label: 'EVELYN', type: 'desk', rotation: 0 });
-    drawRoom({ x: 50, y: 15, width: 8, height: 20, label: 'MONTALVO', type: 'desk', rotation: 0 });
+    drawRoom(50, 45, 8, 20, '#fef3c7', 'EVELYN', undefined);
+    drawRoom(50, 15, 8, 20, '#fef3c7', 'MONTALVO', undefined);
 
-    drawRoom({ x: 65, y: 15, width: 35, height: 50, label: 'SALA', sublabel: 'TELA', type: 'room' });
+    drawRoom(65, 15, 35, 50, '#e0f2fe', 'SALA', 'TELA');
 
     ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 1;
     ctx.setLineDash([5, 5]);
     ctx.strokeRect(offsetX, offsetY, 110 * scale, 135 * scale);
 
+    ctx.setLineDash([]);
+
+    drawAP(82, 30, 'AP-5', '192.168.1.25');
+    drawAP(25, 85, 'AP-1', '192.168.1.21');
+    drawAP(45, 85, 'AP-2', '192.168.1.22');
+    drawAP(18, 45, 'AP-3', '192.168.1.23');
+    drawAP(16, 100, 'AP-4', '192.168.1.24');
+
+    drawRJ45(10, 25, 'RJ-1', '192.168.1.31');
+    drawRJ45(14, 25, 'RJ-2', '192.168.1.32');
+    drawRJ45(20, 25, 'RJ-3', '192.168.1.33');
+    drawRJ45(24, 25, 'RJ-4', '192.168.1.34');
+    drawRJ45(30, 25, 'RJ-5', '192.168.1.35');
+    drawRJ45(34, 25, 'RJ-6', '192.168.1.36');
+
+    drawCable(82, 30, 82, 15, 'cat6a');
+    drawCable(25, 85, 25, 100, 'cat6a');
+    drawCable(45, 85, 45, 100, 'cat6a');
+    drawCable(18, 45, 18, 55, 'cat6a');
+    drawCable(16, 100, 16, 112, 'cat6a');
+
+    drawCable(10, 25, 10, 35, 'cat6');
+    drawCable(14, 25, 14, 35, 'cat6');
+    drawCable(20, 25, 20, 35, 'cat6');
+    drawCable(24, 25, 24, 35, 'cat6');
+    drawCable(30, 25, 30, 35, 'cat6');
+    drawCable(34, 25, 34, 35, 'cat6');
+
+    ctx.fillStyle = '#1e293b';
+    ctx.font = 'bold 11px Arial';
+    ctx.textAlign = 'left';
+    ctx.fillText('LEYENDA RED:', offsetX + 600, offsetY + 10);
+
+    ctx.fillStyle = '#dc2626';
+    ctx.beginPath();
+    ctx.arc(offsetX + 610, offsetY + 30, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '9px Arial';
+    ctx.fillText('AP Unifi 7 Pro', offsetX + 625, offsetY + 33);
+
+    ctx.fillStyle = '#2563eb';
+    ctx.fillRect(offsetX + 607, offsetY + 48, 6, 6);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText('RJ45 - Cat 6', offsetX + 625, offsetY + 51);
+
+    ctx.strokeStyle = '#ea580c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(offsetX + 605, offsetY + 68);
+    ctx.lineTo(offsetX + 625, offsetY + 68);
+    ctx.stroke();
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText('Cable Cat 6A', offsetX + 635, offsetY + 65);
+
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(offsetX + 605, offsetY + 88);
+    ctx.lineTo(offsetX + 625, offsetY + 88);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#1e293b';
+    ctx.fillText('Cable Cat 6', offsetX + 635, offsetY + 85);
+
   }, []);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6">
+        <h2 className="text-xl font-light text-slate-900">Plano Infraestructura de Red - 2D</h2>
+        <p className="text-sm text-slate-500 mt-1">Escala: 1:100 | Sistema UNIFI 7 PRO | Cat 6A para AP, Cat 6 para RJ45</p>
+      </div>
+      <div className="overflow-x-auto">
+        <canvas
+          ref={canvasRef}
+          width={1200}
+          height={900}
+          className="border border-slate-200 rounded"
+        />
+      </div>
+      <div className="mt-6 grid grid-cols-2 gap-6 text-sm">
         <div>
-          <h2 className="text-xl font-light text-slate-900">Vista en Planta - Segundo Piso</h2>
-          <p className="text-sm text-slate-500 mt-1">Escala: 1:100</p>
+          <h3 className="font-semibold text-slate-900 mb-3">Puntos de Acceso (AP)</h3>
+          <ul className="space-y-2 text-slate-600">
+            <li>AP-1: Lobby - 192.168.1.21</li>
+            <li>AP-2: Zona Central - 192.168.1.22</li>
+            <li>AP-3: Entre Mario y Desk 3 - 192.168.1.23</li>
+            <li>AP-4: Zona Printers - 192.168.1.24</li>
+            <li>AP-5: Sala TELA - 192.168.1.25</li>
+          </ul>
         </div>
-        <div className="flex gap-4 text-xs">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-blue-100 border border-slate-900"></div>
-            <span>Salas</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-amber-100 border border-slate-900"></div>
-            <span>Escritorios</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-green-50 border border-slate-900"></div>
-            <span>Utilidad</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-slate-100 border border-slate-900"></div>
-            <span>Lobby</span>
-          </div>
+        <div>
+          <h3 className="font-semibold text-slate-900 mb-3">Puntos de Red (RJ45)</h3>
+          <ul className="space-y-2 text-slate-600">
+            <li>Desktop 1: RJ-1, RJ-2 (192.168.1.31-32)</li>
+            <li>Desktop 2: RJ-3, RJ-4 (192.168.1.33-34)</li>
+            <li>Desktop 3: RJ-5, RJ-6 (192.168.1.35-36)</li>
+          </ul>
         </div>
       </div>
-      <canvas
-        ref={canvasRef}
-        width={1000}
-        height={900}
-        className="w-full border border-slate-200 rounded"
-      />
     </div>
   );
 };
